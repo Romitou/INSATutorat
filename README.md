@@ -1,5 +1,5 @@
 
-# INSATutorat
+# INSATutorat [![wakatime](https://wakatime.com/badge/user/395b07f0-60f3-4a92-a7fd-d4c38328182c/project/51582e5a-5406-4da2-9824-d5b913e2954e.svg)](https://wakatime.com/badge/user/395b07f0-60f3-4a92-a7fd-d4c38328182c/project/51582e5a-5406-4da2-9824-d5b913e2954e)
 Cette application a été réalisé dans le cadre d'un Travail d'Initiative Personnelle (TIP) pour le département STPI de l'INSA Rouen Normandie. Il s'agit d'une plateforme permettant de gérer le tutorat au sein de ce département avec différentes fonctionnalités.
 
 
