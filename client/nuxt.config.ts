@@ -3,6 +3,9 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
   modules: ['@nuxtjs/tailwindcss', '@pinia/nuxt', '@nuxtjs/i18n'],
+  build: {
+    transpile: ['vue-toastification'],
+  },
   i18n: {
     defaultLocale: 'fr',
     strategy: 'no_prefix',
