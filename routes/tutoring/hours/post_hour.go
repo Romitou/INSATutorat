@@ -36,6 +36,7 @@ func PostHour() gin.HandlerFunc {
 		var tutorSubject models.TutorSubject
 		if err := database.Get().
 			Where("id = ?", tutorSubjectId).
+			Preload("Tutees").
 			First(&tutorSubject).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				_ = c.Error(apierrors.NotFound)
