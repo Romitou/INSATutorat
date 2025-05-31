@@ -36,7 +36,7 @@ func SendLoginLink(user models.User, loginToken string) error {
 	}
 
 	data := defaultData(user)
-	data["link"] = os.Getenv("BASE_URL") + "/login#token=" + loginToken
+	data["link"] = os.Getenv("BASE_URL") + "/login?token=" + loginToken
 
 	var htmlContent bytes.Buffer
 	err = t.Execute(&htmlContent, data)
