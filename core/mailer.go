@@ -2,25 +2,29 @@ package core
 
 import (
 	"bytes"
-	"github.com/mailjet/mailjet-apiv3-go/v4"
-	"github.com/romitou/insatutorat/database/models"
+	"fmt"
 	"html/template"
 	"os"
+
+	"github.com/go-gomail/gomail"
+	"github.com/romitou/insatutorat/database/models"
 )
 
-var client *mailjet.Client
-
-// var emailStyle string
+var smtpDialer *gomail.Dialer
 
 func SetupMailer() {
-	client = mailjet.NewMailjetClient(os.Getenv("MAILJET_API_KEY"), os.Getenv("MAILJET_API_SECRET"))
-	// si besoin d'injecter du CSS dans le mail, on peut le faire ici
-	//file, err := os.ReadFile("mails/dist/index.css")
-	//if err != nil {
-	//	log.Println("Error reading CSS file:", err)
-	//	return
-	//}
-	//emailStyle = string(file)
+	smtpHost := os.Getenv("SMTP_HOST")
+	port := os.Getenv("SMTP_PORT")
+	var smtpPort int
+	_, err := fmt.Sscanf(port, "%d", &smtpPort)
+	if err != nil {
+		fmt.Println("Invalid SMTP_PORT, defaulting to 587")
+		smtpPort = 587
+	}
+	smtpUser := os.Getenv("SMTP_USER")
+	smtpPass := os.Getenv("SMTP_PASS")
+
+	smtpDialer = gomail.NewDialer(smtpHost, smtpPort, smtpUser, smtpPass)
 }
 
 func defaultData(user models.User) map[string]interface{} {
@@ -44,25 +48,20 @@ func SendLoginLink(user models.User, loginToken string) error {
 		return err
 	}
 
-	messagesInfo := []mailjet.InfoMessagesV31{
-		{
-			From: &mailjet.RecipientV31{
-				Email: os.Getenv("MAIL_SENDER"),
-				Name:  "InsaTutorat",
-			},
-			To: &mailjet.RecipientsV31{
-				mailjet.RecipientV31{
-					Email: user.Mail,
-					Name:  user.LastName + " " + user.FirstName,
-				},
-			},
-			Subject:  "Tutorat INSA STPI - Lien de connexion",
-			HTMLPart: htmlContent.String(),
-		},
+	from := os.Getenv("MAIL_SENDER")
+	to := user.Mail
+	subject := "Tutorat INSA STPI - Lien de connexion"
+
+	m := gomail.NewMessage()
+	m.SetHeader("From", from)
+	m.SetHeader("To", to)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/html", htmlContent.String())
+
+	if smtpDialer == nil {
+		return fmt.Errorf("SMTP dialer not initialized. Call SetupMailer() first.")
 	}
-	messages := mailjet.MessagesV31{Info: messagesInfo}
-	_, err = client.SendMailV31(&messages)
-	if err != nil {
+	if err = smtpDialer.DialAndSend(m); err != nil {
 		return err
 	}
 	return nil
