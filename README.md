@@ -60,6 +60,7 @@ cd INSATutorat
 ### 2. Configurer la base de données
 
 Créez une base MariaDB et configurez vos identifiants dans le fichier de configuration du backend (par ex. `.env` ou variables d'environnements).
+Les migrations sont automatiques au lancement de l'API.
 
 ### 3. Lancer le backend
 
@@ -87,10 +88,40 @@ Le frontend est accessible sur [http://localhost:3000](http://localhost:3000).
 Pour générer une version statique du frontend :
 
 ```bash
-BASE_URL=https://tutorat-stpi.foo.bar npm run generate
+BASE_URL=https://stpi-tutorat.foo.bar/api npm run generate
 ```
 
 Les fichiers générés se trouvent dans `client/dist`.
 Ils peuvent être servis avec **NGINX**, **Caddy**, ou tout autre serveur web.
 
 Le backend (Go) peut être déployé indépendamment comme binaire.
+
+## Configurations serveurs web
+
+Exemple mono-domaine :
+```
+server {
+    listen 127.0.0.1:9106;
+    access_log  /var/log/nginx/stpi-tutorat.access.log;
+    error_log  /var/log/nginx/stpi-tutorat.error.log;
+    absolute_redirect off;
+
+    root /var/www/stpi-tutorat/client/.output/public;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ $uri/index.html?$args /index.html?$args /404.html;
+    }
+
+    location /api/ {
+        proxy_pass http://127.0.0.1:9107;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        rewrite ^/api/(.*)$ /$1 break;
+    }
+}
+```
