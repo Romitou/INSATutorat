@@ -4,20 +4,22 @@
       <div class="w-full max-w-md space-y-8">
         <div>
           <h2 class="text-center text-3xl font-bold text-gray-900">Connexion à la plateforme</h2>
-          <p class="mt-2 text-center text-sm text-gray-600">Entrez votre email pour recevoir un lien magique ✨</p>
+          <p class="mt-2 text-center text-sm text-gray-600">
+            Saisissez votre adresse mail INSA afin de recevoir un lien de connexion.
+          </p>
         </div>
 
         <form v-if="!success" class="mt-8 space-y-6" @submit.prevent="submit">
           <div class="rounded-md shadow-sm -space-y-px">
             <div>
-              <label class="sr-only" for="email-address">Adresse email</label>
+              <label class="sr-only" for="email-address">Adresse email INSA</label>
               <input
                   id="email-address"
                   v-model="email"
                   autocomplete="email"
                   class="relative block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-red-500 focus:outline-none focus:ring-red-500 sm:text-sm"
                   name="email"
-                  placeholder="Votre adresse email"
+                  placeholder="Votre adresse email INSA"
                   required
                   type="email"
               />
