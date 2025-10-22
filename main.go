@@ -1,6 +1,10 @@
 package main
 
 import (
+	"log"
+	"net/url"
+	"os"
+
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/romitou/insatutorat/core"
@@ -18,7 +22,7 @@ import (
 	"github.com/romitou/insatutorat/routes/tutoring"
 	"github.com/romitou/insatutorat/routes/tutoring/hours"
 	"github.com/romitou/insatutorat/routes/tutoring/lessons"
-	"log"
+	"gopkg.in/cas.v2"
 )
 
 func main() {
@@ -40,6 +44,16 @@ func main() {
 	userMiddleware := middlewares.UserHandler()
 	adminMiddleware := middlewares.AdminHandler()
 
+	casUrl, err := url.Parse(os.Getenv("CAS_URL"))
+	if err != nil {
+		log.Fatal("invalid CAS_URL: ", err)
+		return
+	}
+
+	casClient := cas.NewClient(&cas.Options{
+		URL: casUrl,
+	})
+
 	// définition du routeur principal
 	router := gin.Default()
 
@@ -55,6 +69,8 @@ func main() {
 		authRouter.POST("/send-link", auth.SendLink())
 		authRouter.GET("/self", userMiddleware, auth.Self())
 		authRouter.GET("/logout", auth.Logout())
+
+		authRouter.GET("/validate", auth.Validate(*casClient))
 	}
 
 	// récapitulatifs des affectations (page principale)
