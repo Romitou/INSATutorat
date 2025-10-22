@@ -70,7 +70,7 @@ func main() {
 		authRouter.GET("/self", userMiddleware, auth.Self())
 		authRouter.GET("/logout", auth.Logout())
 
-		authRouter.GET("/validate", auth.Validate(*casClient))
+		authRouter.POST("/validate", auth.Validate(*casClient))
 	}
 
 	// récapitulatifs des affectations (page principale)
