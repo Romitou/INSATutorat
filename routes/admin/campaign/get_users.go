@@ -2,12 +2,13 @@ package campaign
 
 import (
 	"errors"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/romitou/insatutorat/apierrors"
 	"github.com/romitou/insatutorat/database"
 	"github.com/romitou/insatutorat/database/models"
 	"gorm.io/gorm"
-	"strconv"
 )
 
 func GetUsers() gin.HandlerFunc {
@@ -38,7 +39,7 @@ func GetUsers() gin.HandlerFunc {
 		}
 
 		var users []models.User
-		if err = db.Where("school_year = ?", campaign.SchoolYear).Find(&users).Error; err != nil {
+		if err = db.Find(&users).Error; err != nil {
 			apierrors.DatabaseError(c, err)
 			return
 		}
