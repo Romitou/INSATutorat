@@ -18,7 +18,7 @@ onMounted(async () => {
       useToast().info('Redirection vers l\'espace tutoré');
     }
   } else {
-    await router.push('/send-link');
+    await router.push('/login');
   }
 })
 </script>
