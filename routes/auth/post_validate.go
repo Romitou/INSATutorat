@@ -4,16 +4,27 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/romitou/insatutorat/apierrors"
-	"gopkg.in/cas.v2"
 )
 
-func Validate(client cas.Client) gin.HandlerFunc {
+func Validate() gin.HandlerFunc {
 	type query struct {
 		Ticket string `form:"ticket" binding:"required"`
+	}
+
+	casUrl, err := url.Parse(os.Getenv("CAS_URL"))
+	if err != nil {
+		log.Fatal("invalid CAS_URL: ", err)
+	}
+
+	serviceUrl, err := url.Parse(os.Getenv("SERVICE_URL"))
+	if err != nil {
+		log.Fatal("invalid SERVICE_URL: ", err)
 	}
 
 	return func(c *gin.Context) {
@@ -23,11 +34,10 @@ func Validate(client cas.Client) gin.HandlerFunc {
 			return
 		}
 
-		validateURL, err := client.ServiceValidateUrlForRequest(q.Ticket, c.Request)
-		if err != nil {
-			_ = c.Error(err)
-			return
-		}
+		validateURL := casUrl.ResolveReference(&url.URL{
+			Path:     "/serviceValidate",
+			RawQuery: url.Values{"service": {serviceUrl.String()}, "ticket": {q.Ticket}}.Encode(),
+		}).String()
 
 		log.Println("CAS validate URL:")
 		log.Println(validateURL)
