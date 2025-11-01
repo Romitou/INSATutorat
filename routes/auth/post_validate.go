@@ -60,10 +60,6 @@ func CreateUserFromCas(serviceResp ServiceResponse) (*models.User, error) {
 		}
 	}
 
-	if newUser.StpiYear == 0 {
-		return nil, errors.New("user is not in stpi department")
-	}
-
 	newUser.Groups = stpiGroups
 	return &newUser, nil
 }
