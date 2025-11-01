@@ -32,6 +32,7 @@ type AuthenticationSuccess struct {
 type Attributes struct {
 	DisplayName       string   `xml:"displayName"`
 	GivenName         string   `xml:"givenName"`
+	Mail              string   `xml:"mail"`
 	SupannAffectation []string `xml:"supannAffectation"`
 	SN                string   `xml:"sn"`
 }
@@ -41,6 +42,7 @@ func CreateUserFromCas(serviceResp ServiceResponse) (*models.User, error) {
 	newUser.CasUsername = serviceResp.AuthenticationSuccess.User
 	newUser.FirstName = serviceResp.AuthenticationSuccess.Attributes.GivenName
 	newUser.LastName = serviceResp.AuthenticationSuccess.Attributes.SN
+	newUser.Mail = serviceResp.AuthenticationSuccess.Attributes.Mail
 	newUser.StpiYear = 0
 	var stpiGroups []string
 	stpiGroups = []string{}
