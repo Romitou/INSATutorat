@@ -1,30 +1,86 @@
 package auth
 
 import (
+	"encoding/xml"
+	"errors"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/romitou/insatutorat/apierrors"
+	"github.com/romitou/insatutorat/database"
+	"github.com/romitou/insatutorat/database/models"
+	"gorm.io/gorm"
 )
+
+type ServiceResponse struct {
+	XMLName               xml.Name               `xml:"serviceResponse"`
+	AuthenticationSuccess *AuthenticationSuccess `xml:"authenticationSuccess"`
+}
+
+type AuthenticationSuccess struct {
+	User       string      `xml:"user"`
+	Attributes *Attributes `xml:"attributes"`
+}
+
+type Attributes struct {
+	DisplayName       string   `xml:"displayName"`
+	GivenName         string   `xml:"givenName"`
+	SupannAffectation []string `xml:"supannAffectation"`
+	SN                string   `xml:"sn"`
+}
+
+func CreateUserFromCas(serviceResp ServiceResponse) (*models.User, error) {
+	var newUser models.User
+	newUser.CasUsername = serviceResp.AuthenticationSuccess.User
+	newUser.FirstName = serviceResp.AuthenticationSuccess.Attributes.GivenName
+	newUser.LastName = serviceResp.AuthenticationSuccess.Attributes.SN
+	newUser.StpiYear = 0
+	var stpiGroups []string
+	stpiGroups = []string{}
+	for _, affil := range serviceResp.AuthenticationSuccess.Attributes.SupannAffectation {
+		if strings.Contains(affil, "stpi") {
+			stpiGroups = append(stpiGroups, affil)
+			if affil == "stpi1" {
+				newUser.StpiYear = 1
+				newUser.IsTutee = true
+			} else if affil == "stpi2" {
+				newUser.StpiYear = 2
+				newUser.IsTutee = true
+			}
+			if strings.Contains(affil, "sa2") || strings.Contains(affil, "sa3") { // scolarité aménagée
+				newUser.IsTutor = true
+				newUser.IsTutee = true
+			}
+		}
+	}
+
+	if newUser.StpiYear == 0 {
+		return nil, errors.New("user is not in stpi department")
+	}
+
+	newUser.Groups = stpiGroups
+	return &newUser, nil
+}
 
 func Validate() gin.HandlerFunc {
 	type query struct {
 		Ticket string `form:"ticket" binding:"required"`
 	}
 
-	casUrl, err := url.Parse(os.Getenv("CAS_URL"))
-	if err != nil {
-		log.Fatal("invalid CAS_URL: ", err)
+	casUrl, parseErr := url.Parse(os.Getenv("CAS_URL"))
+	if parseErr != nil {
+		log.Fatal("invalid CAS_URL: ", parseErr)
 	}
 
-	serviceUrl, err := url.Parse(os.Getenv("SERVICE_URL"))
-	if err != nil {
-		log.Fatal("invalid SERVICE_URL: ", err)
+	serviceUrl, parseErr := url.Parse(os.Getenv("SERVICE_URL"))
+	if parseErr != nil {
+		log.Fatal("invalid SERVICE_URL: ", parseErr)
 	}
 
 	return func(c *gin.Context) {
@@ -38,9 +94,6 @@ func Validate() gin.HandlerFunc {
 			Path:     "/cas/serviceValidate",
 			RawQuery: url.Values{"service": {serviceUrl.String()}, "ticket": {q.Ticket}}.Encode(),
 		}).String()
-
-		log.Println("CAS validate URL:")
-		log.Println(validateURL)
 
 		req, err := http.NewRequestWithContext(c.Request.Context(), http.MethodGet, validateURL, nil)
 		if err != nil {
@@ -69,6 +122,63 @@ func Validate() gin.HandlerFunc {
 
 		log.Println("CAS response body:")
 		log.Println(string(body))
+
+		var serviceResp ServiceResponse
+		if err = xml.Unmarshal(body, &serviceResp); err != nil {
+			_ = c.Error(err)
+			return
+		}
+
+		if serviceResp.AuthenticationSuccess == nil {
+			_ = c.Error(apierrors.Unauthorized)
+			return
+		}
+
+		// CAS ticket is valid
+
+		var existingUser models.User
+		result := database.Get().Where(&models.User{
+			CasUsername: serviceResp.AuthenticationSuccess.User,
+		}).First(&existingUser)
+		if result.Error != nil {
+			if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+				var newUser *models.User
+				newUser, err = CreateUserFromCas(serviceResp)
+				if err != nil {
+					_ = c.Error(err)
+					return
+				}
+
+				result = database.Get().Create(newUser)
+				if result.Error != nil {
+					apierrors.DatabaseError(c, result.Error)
+					return
+				}
+
+				c.Status(http.StatusCreated)
+				return
+			}
+			apierrors.DatabaseError(c, result.Error)
+			return
+		}
+
+		// User exists, update info
+		updatedUser, err := CreateUserFromCas(serviceResp)
+		if err != nil {
+			_ = c.Error(err)
+			return
+		}
+
+		existingUser.StpiYear = updatedUser.StpiYear
+		existingUser.Groups = updatedUser.Groups
+		existingUser.IsTutee = updatedUser.IsTutee
+		existingUser.IsTutor = updatedUser.IsTutor
+
+		result = database.Get().Save(&existingUser)
+		if result.Error != nil {
+			apierrors.DatabaseError(c, result.Error)
+			return
+		}
 
 		c.Status(http.StatusOK)
 	}

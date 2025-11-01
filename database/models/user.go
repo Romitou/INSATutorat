@@ -45,19 +45,20 @@ func (s *StringArray) Scan(value interface{}) error {
 type User struct {
 	ID uint `gorm:"primarykey" json:"id"`
 
-	FirstName  string      `json:"firstName"`
-	LastName   string      `json:"lastName"`
-	Mail       string      `gorm:"uniqueIndex" json:"-"`
-	Groups     StringArray `json:"-"`
-	StudyYear  int         `json:"-"` // année d'étude (1, 2, 3, 4, 5)
-	SchoolYear string      `json:"-"` // année scolaire (2023, 2024, 2025, etc.), volontairement en string pour extensibilité
+	CasUsername string      `gorm:"uniqueIndex" json:"-"`
+	FirstName   string      `json:"firstName"`
+	LastName    string      `json:"lastName"`
+	Mail        string      `gorm:"uniqueIndex" json:"-"`
+	Groups      StringArray `json:"-"`
+	StpiYear    int         `json:"-"` // année d'étude (1, 2)
 
 	IsTutor bool `json:"-"`
 	IsTutee bool `json:"-"`
 	IsAdmin bool `json:"-"`
 
-	LoginToken       string    `json:"-"`
-	LoginRequestedAt time.Time `json:"-"`
+	// used for login links
+	// LoginToken       string    `json:"-"`
+	// LoginRequestedAt time.Time `json:"-"`
 
 	Availabilities []SemesterAvailability `json:"-"`
 
@@ -72,18 +73,20 @@ func (user User) IsEmpty() bool {
 type PrivateUser struct {
 	ID uint `gorm:"primarykey" json:"id"`
 
-	FirstName  string      `json:"firstName"`
-	LastName   string      `json:"lastName"`
-	Mail       string      `gorm:"uniqueIndex" json:"mail"`
-	SchoolYear string      `json:"schoolYear"`
-	Groups     StringArray `json:"groups"`
+	CasUsername string      `gorm:"uniqueIndex" json:"casUsername"`
+	FirstName   string      `json:"firstName"`
+	LastName    string      `json:"lastName"`
+	Mail        string      `gorm:"uniqueIndex" json:"mail"`
+	StudyYear   int         `json:"studyYear"`
+	Groups      StringArray `json:"groups"`
 
 	IsTutor bool `json:"isTutor"`
 	IsTutee bool `json:"isTutee"`
 	IsAdmin bool `json:"isAdmin"`
 
-	LoginToken       string    `json:"-"`
-	LoginRequestedAt time.Time `json:"-"`
+	// used for login links
+	// LoginToken       string    `json:"-"`
+	// LoginRequestedAt time.Time `json:"-"`
 
 	Availabilities []SemesterAvailability `json:"-"`
 
@@ -93,14 +96,15 @@ type PrivateUser struct {
 
 func (user User) ToPrivate() PrivateUser {
 	return PrivateUser{
-		ID:         user.ID,
-		FirstName:  user.FirstName,
-		LastName:   user.LastName,
-		Mail:       user.Mail,
-		Groups:     user.Groups,
-		SchoolYear: user.SchoolYear,
-		IsTutor:    user.IsTutor,
-		IsTutee:    user.IsTutee,
-		IsAdmin:    user.IsAdmin,
+		ID:          user.ID,
+		CasUsername: user.CasUsername,
+		FirstName:   user.FirstName,
+		LastName:    user.LastName,
+		Mail:        user.Mail,
+		StudyYear:   user.StpiYear,
+		Groups:      user.Groups,
+		IsTutor:     user.IsTutor,
+		IsTutee:     user.IsTutee,
+		IsAdmin:     user.IsAdmin,
 	}
 }

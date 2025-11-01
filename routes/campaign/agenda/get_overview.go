@@ -2,14 +2,16 @@ package agenda
 
 import (
 	"errors"
+	"net/http"
+	"os"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/romitou/insatutorat/apierrors"
 	"github.com/romitou/insatutorat/core"
 	"github.com/romitou/insatutorat/database"
 	"github.com/romitou/insatutorat/database/models"
 	"gorm.io/gorm"
-	"net/http"
-	"strconv"
 )
 
 func OverviewAgenda() gin.HandlerFunc {
@@ -33,7 +35,7 @@ func OverviewAgenda() gin.HandlerFunc {
 		}
 
 		// on récupère l'agenda de l'utilisateur pour le semestre
-		campaignOverview, err := core.GetCampaignOverview(user.SchoolYear+"-STPI"+strconv.Itoa(user.StudyYear), campaign, user.Groups)
+		campaignOverview, err := core.GetCampaignOverview(os.Getenv("SCHOOL_YEAR")+"-STPI"+strconv.Itoa(user.StpiYear), campaign, user.Groups)
 		if err != nil {
 			_ = c.Error(err)
 			return

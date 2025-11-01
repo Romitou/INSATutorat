@@ -3,10 +3,12 @@ package availabilities
 import (
 	"encoding/json"
 	"errors"
-	"github.com/romitou/insatutorat/core"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
+
+	"github.com/romitou/insatutorat/core"
 
 	"github.com/gin-gonic/gin"
 	"github.com/romitou/insatutorat/apierrors"
@@ -28,7 +30,7 @@ func PostAvailabilities() gin.HandlerFunc {
 		var campaign models.Campaign
 		if err := database.Get().
 			Where("id = ?", campaignId).
-			Where("school_year = ?", user.SchoolYear).
+			Where("school_year = ?", os.Getenv("SCHOOL_YEAR")).
 			First(&campaign).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				_ = c.Error(apierrors.NotFound)
@@ -59,7 +61,7 @@ func PostAvailabilities() gin.HandlerFunc {
 		}
 
 		// on récupère l'agenda de l'utilisateur pour le semestre
-		campaignOverview, err := core.GetCampaignOverview(user.SchoolYear+"-STPI"+strconv.Itoa(user.StudyYear), campaign, user.Groups)
+		campaignOverview, err := core.GetCampaignOverview(os.Getenv("SCHOOL_YEAR")+"-STPI"+strconv.Itoa(user.StpiYear), campaign, user.Groups)
 		if err != nil {
 			_ = c.Error(err)
 			return

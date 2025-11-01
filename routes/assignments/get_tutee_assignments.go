@@ -2,12 +2,14 @@ package assignments
 
 import (
 	"errors"
+	"net/http"
+	"os"
+
 	"github.com/gin-gonic/gin"
 	"github.com/romitou/insatutorat/apierrors"
 	"github.com/romitou/insatutorat/database"
 	"github.com/romitou/insatutorat/database/models"
 	"gorm.io/gorm"
-	"net/http"
 )
 
 type TuteeAssignment struct {
@@ -29,7 +31,7 @@ func TuteeAssignments() gin.HandlerFunc {
 
 		var openCampaigns []models.Campaign
 		if err := database.Get().
-			Where("school_year = ?", user.SchoolYear).
+			Where("school_year = ?", os.Getenv("SCHOOL_YEAR")).
 			Find(&openCampaigns).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusOK, []tuteeAssignmentElement{})
