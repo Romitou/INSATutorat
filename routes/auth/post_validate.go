@@ -119,9 +119,6 @@ func Validate() gin.HandlerFunc {
 			return
 		}
 
-		log.Println("CAS response body:")
-		log.Println(string(body))
-
 		var serviceResp ServiceResponse
 		if err = xml.Unmarshal(body, &serviceResp); err != nil {
 			_ = c.Error(err)
@@ -132,8 +129,6 @@ func Validate() gin.HandlerFunc {
 			_ = c.Error(apierrors.Unauthorized)
 			return
 		}
-
-		// CAS ticket is valid
 
 		var existingUser models.User
 		result := database.Get().Where(&models.User{
