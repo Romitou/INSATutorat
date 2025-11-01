@@ -35,7 +35,7 @@ func Validate() gin.HandlerFunc {
 		}
 
 		validateURL := casUrl.ResolveReference(&url.URL{
-			Path:     "/serviceValidate",
+			Path:     "/cas/serviceValidate",
 			RawQuery: url.Values{"service": {serviceUrl.String()}, "ticket": {q.Ticket}}.Encode(),
 		}).String()
 
