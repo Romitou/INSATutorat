@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/romitou/insatutorat/apierrors"
 	"github.com/romitou/insatutorat/database"
@@ -151,6 +152,14 @@ func Validate() gin.HandlerFunc {
 					return
 				}
 
+				// on met à jour la session
+				session := sessions.Default(c)
+				session.Set("user_id", existingUser.ID)
+				err = session.Save()
+				if err != nil {
+					_ = c.Error(err)
+				}
+
 				c.Status(http.StatusCreated)
 				return
 			}
@@ -174,6 +183,14 @@ func Validate() gin.HandlerFunc {
 		if result.Error != nil {
 			apierrors.DatabaseError(c, result.Error)
 			return
+		}
+
+		// on met à jour la session
+		session := sessions.Default(c)
+		session.Set("user_id", existingUser.ID)
+		err = session.Save()
+		if err != nil {
+			_ = c.Error(err)
 		}
 
 		c.Status(http.StatusOK)
