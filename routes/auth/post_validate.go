@@ -23,7 +23,7 @@ func Validate(client cas.Client) gin.HandlerFunc {
 			return
 		}
 
-		validateURL, err := client.ValidateUrlForRequest(q.Ticket, c.Request)
+		validateURL, err := client.ServiceValidateUrlForRequest(q.Ticket, c.Request)
 		if err != nil {
 			_ = c.Error(err)
 			return
