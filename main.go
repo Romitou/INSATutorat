@@ -52,8 +52,9 @@ func main() {
 	// logique d'authentification
 	authRouter := router.Group("/auth")
 	{
-		authRouter.POST("/login", auth.Login())
-		authRouter.POST("/send-link", auth.SendLink())
+		// précédemment utilisés pour login via email
+		// authRouter.POST("/login", auth.Login())
+		// authRouter.POST("/send-link", auth.SendLink())
 		authRouter.GET("/self", userMiddleware, auth.Self())
 		authRouter.GET("/logout", auth.Logout())
 

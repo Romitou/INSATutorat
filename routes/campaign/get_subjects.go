@@ -14,8 +14,6 @@ import (
 
 func Subjects() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user := c.MustGet("user").(models.User)
-
 		campaignId := c.Param("campaignId")
 		if campaignId == "" {
 			_ = c.Error(apierrors.BadRequest)
