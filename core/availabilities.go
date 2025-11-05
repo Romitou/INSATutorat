@@ -241,6 +241,15 @@ func GetCampaignOverview(agenda string, campaign models.Campaign, groups []strin
 		return nil, errors.New("dates de début/fin invalides")
 	}
 
+	// on retire STPI1 ou STPI2 des groupes, ils sont trop larges
+	groupsFiltered := make([]string, 0)
+	for _, g := range groups {
+		if g != "stpi1" && g != "stpi2" {
+			groupsFiltered = append(groupsFiltered, g)
+		}
+	}
+	groups = groupsFiltered
+
 	months := generateMonthsBetween(start, end)
 	agendaItems := make([]AgendaItem, 0)
 
