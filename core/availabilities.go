@@ -3,13 +3,14 @@ package core
 import (
 	"errors"
 	"fmt"
-	"github.com/mmcdole/gofeed/rss"
-	"github.com/romitou/insatutorat/database/models"
 	"log"
 	"net/http"
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/mmcdole/gofeed/rss"
+	"github.com/romitou/insatutorat/database/models"
 )
 
 type InsaPeriod int
@@ -224,7 +225,7 @@ func generateMonthsBetween(start, end time.Time) []time.Time {
 // hasCommonGroup vérifie s'il y a une valeur commune entre deux listes
 func hasCommonGroup(itemGroups, targetGroups []string) bool {
 	for _, g := range targetGroups {
-		if slices.Contains(itemGroups, g) {
+		if slices.Contains(itemGroups, strings.ToUpper(g)) {
 			return true
 		}
 	}
