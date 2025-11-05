@@ -33,6 +33,7 @@ export interface TuteeRegistration {
     subjectId: number;
     tutorSubjectId?: number | null;
     totalHours: number;
+    tutor?: User; // optional tutor info returned by the API (added to satisfy templates)
 }
 
 export interface TutoringHour {
