@@ -108,6 +108,8 @@ func GetMonthAgenda(agenda string, date time.Time) ([]AgendaItem, error) {
 		}
 	}
 
+	log.Println("fetch agenda for date " + date.String())
+
 	request, err := http.NewRequest(
 		"GET",
 		"https://agendas.insa-rouen.fr/rss/rss2.0.php?cal="+agenda+"&cpath=&rssview=month&getdate="+dateFormat,
