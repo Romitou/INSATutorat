@@ -157,7 +157,7 @@ const navigation = ref<NavigationItem[]>([
 
 const getAvailableNavigation = () => {
   if (!userStore.user) return []
-  return navigation.value.filter(item => userStore.user[item.role])
+  return navigation.value.filter(item => userStore.user.isAdmin || userStore.user[item.role])
 }
 
 function changeLocale(code: 'fr' | 'en') {
