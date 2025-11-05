@@ -54,7 +54,7 @@ func CreateUserFromCas(serviceResp ServiceResponse) (*models.User, error) {
 				newUser.IsTutee = true
 			} else if affil == "stpi2" {
 				newUser.StpiYear = 2
-				newUser.IsTutee = true
+				newUser.IsTutor = true
 			}
 			if strings.Contains(affil, "sa2") || strings.Contains(affil, "sa3") { // scolarité aménagée
 				newUser.IsTutor = true
