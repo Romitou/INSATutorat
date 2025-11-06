@@ -68,15 +68,13 @@ func PostRegistrations() gin.HandlerFunc {
 		if err := database.Get().
 			Where("id IN ?", registerJson.Subjects).
 			Find(&subjects).Error; err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				_ = c.Error(apierrors.NotFound)
+			if !errors.Is(err, gorm.ErrRecordNotFound) {
+				apierrors.DatabaseError(c, err)
 				return
 			}
-			apierrors.DatabaseError(c, err)
-			return
 		}
 
-		if len(subjects) == 0 {
+		if len(subjects) != len(registerJson.Subjects) {
 			_ = c.Error(apierrors.NotFound)
 			return
 		}
@@ -87,11 +85,6 @@ func PostRegistrations() gin.HandlerFunc {
 				_ = c.Error(apierrors.BadRequest)
 				return
 			}
-		}
-
-		if len(subjects) != len(registerJson.Subjects) {
-			_ = c.Error(apierrors.BadRequest)
-			return
 		}
 
 		var existingRegistrations []models.TuteeRegistration
