@@ -34,8 +34,8 @@ var InvalidJson = PublicError{
 	Help:      "The JSON provided in the request body is invalid.",
 }
 
-var EmailNotRegistered = PublicError{
-	HttpCode:  http.StatusNotFound,
-	ErrorCode: "EMAIL_NOT_REGISTERED",
-	Help:      "No account is associated with this email address.",
+var NoCampaignAvailability = PublicError{
+	HttpCode:  http.StatusBadRequest,
+	ErrorCode: "NO_CAMPAIGN_AVAILABILITY",
+	Help:      "You have not set your availability for this campaign.",
 }

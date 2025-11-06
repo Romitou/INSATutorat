@@ -7,6 +7,10 @@ import type {Slots, Subject} from "~/types/api";
 
 const campaignId = useRoute().params.campaignId as string;
 
+const availabilitiesLink = computed(() => `/campaign/${campaignId}/availabilities`)
+
+const { t: $t } = useI18n()
+
 definePageMeta({
   layout: 'loggedin'
 })
@@ -101,7 +105,7 @@ async function submitChoices() {
                 :slots="availabilities"
             />
             <NuxtLink
-                :to="`/campaign/${campaignId}/availabilities`"
+                :to="availabilitiesLink"
                 class="md:hidden inline-block mt-1 px-3 py-1.5 text-sm bg-zinc-100 text-zinc-800 hover:bg-zinc-200 rounded-md text-center"
             >
               {{ $t('editAvailabilitiesMobileButton') }}
@@ -117,15 +121,28 @@ async function submitChoices() {
           <h2 class="text-2xl font-semibold text-red-700">{{ $t('subjectsSectionTitle') }}</h2>
         </div>
 
+        <div v-if="!areAvailabilitiesFilled" class="mb-4 flex items-center justify-between rounded-lg border border-red-200 bg-red-50 p-4">
+          <div class="text-sm text-red-800">
+            {{ $t('pleaseFillAvailabilitiesFirst') }}
+          </div>
+          <NuxtLink
+              :to="availabilitiesLink"
+              class="inline-block ml-4 px-3 py-1.5 text-sm bg-red-600 text-white rounded-md hover:bg-red-700"
+          >
+            {{ $t('editAvailabilitiesButton') }}
+          </NuxtLink>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-          <div>
+          <div :class="{ 'opacity-60 pointer-events-none': !areAvailabilitiesFilled }">
             <h3 class="text-lg font-medium text-zinc-700 mb-3">{{ $t('availableSubjectsTitle') }}</h3>
             <draggable
                 v-model="subjects"
                 :group="{ name: 'subjects', pull: true, put: true }"
                 class="bg-zinc-50 border border-zinc-200 rounded-xl p-4 min-h-[200px]"
                 item-key="id"
+                :disabled="!areAvailabilitiesFilled"
             >
               <template #item="{ element }">
                 <div class="p-3 mb-2 rounded-lg bg-white shadow hover:bg-red-50 transition cursor-grab">
@@ -139,13 +156,14 @@ async function submitChoices() {
           </div>
 
 
-          <div>
+          <div :class="{ 'opacity-60 pointer-events-none': !areAvailabilitiesFilled }">
             <h3 class="text-lg font-medium text-zinc-700 mb-3">{{ $t('selectedSubjectsTitle') }}</h3>
             <draggable
                 v-model="selectedSubjects"
                 :group="{ name: 'subjects', pull: true, put: true }"
                 class="bg-zinc-50 border border-zinc-200 rounded-xl p-4 min-h-[200px]"
                 item-key="id"
+                :disabled="!areAvailabilitiesFilled"
             >
               <template #item="{ element, index }">
                 <div
@@ -164,8 +182,10 @@ async function submitChoices() {
 
       <div class="flex justify-end mt-6">
         <button
-            class="px-6 py-3 rounded-xl bg-red-600 text-white font-semibold shadow hover:bg-red-700 transition"
+            :disabled="!areAvailabilitiesFilled"
+            :aria-disabled="!areAvailabilitiesFilled"
             @click="submitChoices"
+            :class="( !areAvailabilitiesFilled ) ? 'px-6 py-3 rounded-xl bg-zinc-300 text-zinc-600 font-semibold shadow cursor-not-allowed' : 'px-6 py-3 rounded-xl bg-red-600 text-white font-semibold shadow hover:bg-red-700 transition'"
         >
           {{ $t('submitChoicesButton') }}
         </button>

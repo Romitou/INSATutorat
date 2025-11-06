@@ -46,7 +46,7 @@ func PostRegistrations() gin.HandlerFunc {
 			Where("campaign_id = ?", campaignId).
 			Find(&semesterAvailability).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				_ = c.Error(apierrors.BadRequest)
+				_ = c.Error(apierrors.NoCampaignAvailability)
 				return
 			}
 			apierrors.DatabaseError(c, err)
@@ -54,7 +54,7 @@ func PostRegistrations() gin.HandlerFunc {
 		}
 
 		if semesterAvailability.ID == 0 {
-			_ = c.Error(apierrors.BadRequest)
+			_ = c.Error(apierrors.NoCampaignAvailability)
 			return
 		}
 

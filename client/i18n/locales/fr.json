@@ -88,5 +88,6 @@
   "contentRequired": "Le contenu est requis.",
   "tuteeSpace": "Espace tutoré",
   "tutorSpace": "Espace tuteur",
-  "adminSpace": "Espace admin"
+  "adminSpace": "Espace admin",
+  "pleaseFillAvailabilitiesFirst": "Veuillez d'abord renseigner vos disponibilités avant de vous inscrire à un semestre."
 }

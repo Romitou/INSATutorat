@@ -88,5 +88,6 @@
   "contentRequired": "Content is required.",
   "tuteeSpace": "Tutee space",
   "tutorSpace": "Tutor space",
-  "adminSpace": "Espace admin"
+  "adminSpace": "Espace admin",
+  "pleaseFillAvailabilitiesFirst": "Please fill in your availabilities first."
 }
