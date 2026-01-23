@@ -2,6 +2,9 @@ package auth
 
 import (
 	"errors"
+	"net/http"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/romitou/insatutorat/apierrors"
@@ -9,8 +12,6 @@ import (
 	"github.com/romitou/insatutorat/database"
 	"github.com/romitou/insatutorat/database/models"
 	"gorm.io/gorm"
-	"net/http"
-	"time"
 )
 
 type sendLinkJson struct {

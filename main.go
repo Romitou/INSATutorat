@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -52,13 +53,15 @@ func main() {
 	// logique d'authentification
 	authRouter := router.Group("/auth")
 	{
-		// précédemment utilisés pour login via email
-		// authRouter.POST("/login", auth.Login())
-		// authRouter.POST("/send-link", auth.SendLink())
+		if os.Getenv("AUTH_METHOD") == "MAGIC_LINK" {
+			authRouter.POST("/login", auth.Login())
+			authRouter.POST("/send-link", auth.SendLink())
+		} else {
+			authRouter.POST("/validate", auth.Validate())
+		}
+
 		authRouter.GET("/self", userMiddleware, auth.Self())
 		authRouter.GET("/logout", auth.Logout())
-
-		authRouter.POST("/validate", auth.Validate())
 	}
 
 	// récapitulatifs des affectations (page principale)

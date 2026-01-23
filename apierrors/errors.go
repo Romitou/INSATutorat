@@ -39,3 +39,9 @@ var NoCampaignAvailability = PublicError{
 	ErrorCode: "NO_CAMPAIGN_AVAILABILITY",
 	Help:      "You have not set your availability for this campaign.",
 }
+
+var EmailNotRegistered = PublicError{
+	HttpCode:  http.StatusBadRequest,
+	ErrorCode: "EMAIL_NOT_REGISTERED",
+	Help:      "The email address provided is not registered.",
+}

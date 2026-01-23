@@ -57,8 +57,8 @@ type User struct {
 	IsAdmin bool `json:"-"`
 
 	// used for login links
-	// LoginToken       string    `json:"-"`
-	// LoginRequestedAt time.Time `json:"-"`
+	LoginToken       string    `json:"-"`
+	LoginRequestedAt time.Time `json:"-"`
 
 	Availabilities []SemesterAvailability `json:"-"`
 

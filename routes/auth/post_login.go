@@ -2,16 +2,17 @@ package auth
 
 import (
 	"errors"
+	"log"
+	"net/http"
+	"os"
+	"time"
+
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/romitou/insatutorat/apierrors"
 	"github.com/romitou/insatutorat/database"
 	"github.com/romitou/insatutorat/database/models"
 	"gorm.io/gorm"
-	"log"
-	"net/http"
-	"os"
-	"time"
 )
 
 type loginJson struct {

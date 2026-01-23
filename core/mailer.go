@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
+	"log"
 	"os"
 
 	"github.com/go-gomail/gomail"
@@ -41,6 +42,10 @@ func SendLoginLink(user models.User, loginToken string) error {
 
 	data := defaultData(user)
 	data["link"] = os.Getenv("BASE_URL") + "/login?token=" + loginToken
+
+	if os.Getenv("DEV_MODE") == "true" {
+		log.Println("MAGIC LINK:", data["link"])
+	}
 
 	var htmlContent bytes.Buffer
 	err = t.Execute(&htmlContent, data)
