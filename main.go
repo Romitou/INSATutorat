@@ -60,6 +60,7 @@ func main() {
 			authRouter.POST("/validate", auth.Validate())
 		}
 
+		authRouter.GET("/config", auth.GetConfig())
 		authRouter.GET("/self", userMiddleware, auth.Self())
 		authRouter.GET("/logout", auth.Logout())
 	}
