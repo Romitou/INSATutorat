@@ -151,7 +151,7 @@ func Validate() gin.HandlerFunc {
 
 				// on met à jour la session
 				session := sessions.Default(c)
-				session.Set("user_id", existingUser.ID)
+				session.Set("user_id", newUser.ID)
 				err = session.Save()
 				if err != nil {
 					_ = c.Error(err)
