@@ -21,6 +21,11 @@ func PostRegistrations() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user := c.MustGet("user").(models.User)
 
+		if !user.IsTutor {
+			_ = c.Error(apierrors.Forbidden)
+			return
+		}
+
 		campaignId := c.Param("campaignId")
 		if campaignId == "" {
 			_ = c.Error(apierrors.BadRequest)
