@@ -56,6 +56,7 @@ func Login() gin.HandlerFunc {
 
 		// on met à jour la session
 		session := sessions.Default(c)
+		session.Clear()
 		session.Set("user_id", user.ID)
 		err := session.Save()
 		if err != nil {
