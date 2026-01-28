@@ -2,7 +2,6 @@ package auth
 
 import (
 	"errors"
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -27,7 +26,6 @@ func Login() gin.HandlerFunc {
 			return
 		}
 
-		log.Println(os.Getenv("DEV_MODE") != "true")
 		var user models.User
 		result := database.Get().Where(&models.User{
 			LoginToken: input.LoginToken,
@@ -41,15 +39,15 @@ func Login() gin.HandlerFunc {
 			return
 		}
 
-		log.Println(os.Getenv("DEV_MODE") != "true")
 		if user.LoginRequestedAt.IsZero() {
 			_ = c.Error(apierrors.Unauthorized)
 			return
 		}
 
 		// le login token est valide pendant 15 minutes
-		log.Println(os.Getenv("DEV_MODE") != "true")
-		if os.Getenv("DEV_MODE") != "true" && user.LoginRequestedAt.Add(15*time.Minute).Before(time.Now()) {
+		// La vérification peut être désactivée avec CHECK_TOKEN_EXPIRATION=false
+		checkExpiration := os.Getenv("CHECK_TOKEN_EXPIRATION") != "false"
+		if checkExpiration && user.LoginRequestedAt.Add(15*time.Minute).Before(time.Now()) {
 			_ = c.Error(apierrors.Unauthorized)
 			return
 		}
