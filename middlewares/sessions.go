@@ -1,12 +1,13 @@
 package middlewares
 
 import (
+	"net/http"
+	"os"
+
 	"github.com/gin-contrib/sessions"
 	gormsessions "github.com/gin-contrib/sessions/gorm"
 	"github.com/gin-gonic/gin"
 	"github.com/romitou/insatutorat/database"
-	"net/http"
-	"os"
 )
 
 func SessionHandler() gin.HandlerFunc {
@@ -16,7 +17,7 @@ func SessionHandler() gin.HandlerFunc {
 		Path:     "/",
 		Domain:   os.Getenv("DOMAIN"),
 		MaxAge:   60 * 60 * 24 * 90, // 3 months
-		Secure:   true,
+		Secure:   os.Getenv("HTTP_SECURE") != "false",
 		HttpOnly: true,
 	}
 
