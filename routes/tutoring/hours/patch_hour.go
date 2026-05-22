@@ -64,8 +64,8 @@ func PatchHour() gin.HandlerFunc {
 			return
 		}
 
-		// on autorise seulement les admins et le tuteur/tutoré à modifier l'heure
-		if !user.IsAdmin && tutorSubject.TutorID != user.ID && hour.TuteeID != user.ID {
+		// on autorise seulement les admins et le tutoré à modifier l'heure
+		if !user.IsAdmin && hour.TuteeID != user.ID {
 			_ = c.Error(apierrors.Forbidden)
 			return
 		}

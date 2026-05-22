@@ -356,6 +356,7 @@ const sortedTutees = computed(() => {
                 {{ $t('total') }} : {{ getTotalHours(tutee.hours) }} h
               </span>
               <button
+                  v-if="useUserStore().user?.isAdmin || tutee.id === userId"
                   class="inline-flex items-center gap-1 bg-green-600 text-white px-3 py-1.5 rounded-md hover:bg-green-700 transition text-sm"
                   @click="selectedTuteeId = tutee.id"
               >
@@ -374,7 +375,7 @@ const sortedTutees = computed(() => {
                 <ClockIcon class="w-4 h-4 text-zinc-400"/>
                 <span>{{ formatDate(hour.startDate) }} → {{ formatDate(hour.endDate) }}</span>
               </div>
-              <div class="flex items-center gap-1">
+              <div v-if="useUserStore().user?.isAdmin || tutee.id === userId" class="flex items-center gap-1">
                 <button class="text-blue-600 hover:underline text-xs" @click="handleEditHour(hour, tutee.id)">
                   {{ $t('edit') }}
                 </button>

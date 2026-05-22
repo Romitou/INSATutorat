@@ -46,8 +46,8 @@ func PostHour() gin.HandlerFunc {
 			return
 		}
 
-		// on autorise uniquement le tuteur, le tutoré et les admins
-		if !user.IsAdmin && tutorSubject.TutorID != user.ID {
+		// on autorise uniquement le tutoré et les admins (le tuteur ne peut plus saisir les heures)
+		if !user.IsAdmin {
 			found := false
 			for _, tuteeReg := range tutorSubject.Tutees {
 				if tuteeReg.TuteeID == input.TuteeId && tuteeReg.TuteeID == user.ID {
