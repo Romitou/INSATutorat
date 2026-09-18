@@ -143,6 +143,8 @@ func Validate() gin.HandlerFunc {
 					return
 				}
 
+				newUser.LastLoginAt = time.Now()
+
 				result = database.Get().Create(newUser)
 				if result.Error != nil {
 					apierrors.DatabaseError(c, result.Error)
@@ -176,6 +178,7 @@ func Validate() gin.HandlerFunc {
 		existingUser.Groups = updatedUser.Groups
 		existingUser.IsTutee = updatedUser.IsTutee
 		existingUser.IsTutor = updatedUser.IsTutor
+		existingUser.LastLoginAt = time.Now()
 
 		result = database.Get().Save(&existingUser)
 		if result.Error != nil {

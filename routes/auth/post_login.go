@@ -52,6 +52,12 @@ func Login() gin.HandlerFunc {
 			return
 		}
 
+		user.LastLoginAt = time.Now()
+		if err := database.Get().Save(&user).Error; err != nil {
+			apierrors.DatabaseError(c, err)
+			return
+		}
+
 		// on met à jour la session
 		session := sessions.Default(c)
 		session.Clear()

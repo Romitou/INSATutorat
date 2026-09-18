@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/go-gomail/gomail"
 	"github.com/romitou/insatutorat/database/models"
@@ -34,31 +35,21 @@ func defaultData(user models.User) map[string]interface{} {
 	}
 }
 
-func SendLoginLink(user models.User, loginToken string) error {
-	t, err := template.ParseFiles("mails/build_production/loginLink.html")
+// sendTemplatedMail factorise le chargement d'un template mails/build_production/*.html
+// (généré par `npm run build` dans mails/, cf. mails/emails/) et l'envoi via SMTP.
+func sendTemplatedMail(templateFile, to, subject string, data map[string]interface{}) error {
+	t, err := template.ParseFiles("mails/build_production/" + templateFile)
 	if err != nil {
 		return err
-	}
-
-	data := defaultData(user)
-	data["link"] = os.Getenv("BASE_URL") + "/login?token=" + loginToken
-
-	if os.Getenv("DEV_MODE") == "true" {
-		log.Println("MAGIC LINK:", data["link"])
 	}
 
 	var htmlContent bytes.Buffer
-	err = t.Execute(&htmlContent, data)
-	if err != nil {
+	if err = t.Execute(&htmlContent, data); err != nil {
 		return err
 	}
 
-	from := os.Getenv("MAIL_SENDER")
-	to := user.Mail
-	subject := "Tutorat INSA STPI - Lien de connexion"
-
 	m := gomail.NewMessage()
-	m.SetHeader("From", from)
+	m.SetHeader("From", os.Getenv("MAIL_SENDER"))
 	m.SetHeader("To", to)
 	m.SetHeader("Subject", subject)
 	m.SetBody("text/html", htmlContent.String())
@@ -66,8 +57,72 @@ func SendLoginLink(user models.User, loginToken string) error {
 	if smtpDialer == nil {
 		return fmt.Errorf("SMTP dialer not initialized. Call SetupMailer() first.")
 	}
-	if err = smtpDialer.DialAndSend(m); err != nil {
-		return err
+	return smtpDialer.DialAndSend(m)
+}
+
+// tutoringSpaceLink construit le lien vers l'espace de tutorat (heures/séances) d'une
+// affectation tuteur/tutoré donnée
+func tutoringSpaceLink(tutorSubjectID uint) string {
+	return os.Getenv("BASE_URL") + "/tutoring/" + strconv.FormatUint(uint64(tutorSubjectID), 10)
+}
+
+func SendLoginLink(user models.User, loginToken string) error {
+	data := defaultData(user)
+	data["link"] = os.Getenv("BASE_URL") + "/login?token=" + loginToken
+
+	if os.Getenv("DEV_MODE") == "true" {
+		log.Println("MAGIC LINK:", data["link"])
 	}
-	return nil
+
+	return sendTemplatedMail("loginLink.html", user.Mail, "Tutorat INSA STPI - Lien de connexion", data)
+}
+
+// SendAssignmentNotificationToTutee prévient un tutoré qu'il vient d'être mis en
+// relation avec un tuteur pour une matière donnée
+func SendAssignmentNotificationToTutee(tutee, tutor models.User, subject models.Subject, tutorSubjectID uint) error {
+	data := map[string]interface{}{
+		"tutee":   tutee,
+		"tutor":   tutor,
+		"subject": subject,
+		"link":    tutoringSpaceLink(tutorSubjectID),
+	}
+	return sendTemplatedMail("assignmentNotificationTutee.html", tutee.Mail, "Tutorat INSA STPI - Vous avez un nouveau tuteur", data)
+}
+
+// SendAssignmentNotificationToTutor prévient un tuteur qu'un nouveau tutoré vient de
+// lui être affecté pour une matière donnée
+func SendAssignmentNotificationToTutor(tutor, tutee models.User, subject models.Subject, tutorSubjectID uint) error {
+	data := map[string]interface{}{
+		"tutor":   tutor,
+		"tutee":   tutee,
+		"subject": subject,
+		"link":    tutoringSpaceLink(tutorSubjectID),
+	}
+	return sendTemplatedMail("assignmentNotificationTutor.html", tutor.Mail, "Tutorat INSA STPI - Un nouveau tutoré vous a été affecté", data)
+}
+
+// SendHourReminderToTutor prévient un tuteur qu'aucune heure n'a encore été déclarée
+// pour une de ses matières. Seul le tutoré (ou un admin) peut déclarer les heures
+// (cf. routes/tutoring/hours) : ce mail lui demande donc de relancer son tutoré,
+// qui reçoit en parallèle son propre rappel via SendHourReminderToTutee.
+func SendHourReminderToTutor(tutor models.User, subject models.Subject, tutorSubjectID uint) error {
+	data := map[string]interface{}{
+		"tutor":   tutor,
+		"subject": subject,
+		"link":    tutoringSpaceLink(tutorSubjectID),
+	}
+	return sendTemplatedMail("hourReminderTutor.html", tutor.Mail, "Tutorat INSA STPI - Relancez votre tutoré pour la déclaration des heures", data)
+}
+
+// SendHourReminderToTutee rappelle à un tutoré qu'il n'a encore déclaré aucune heure
+// pour une de ses matières. C'est lui (ou un admin) qui doit renseigner les heures
+// effectuées avec son tuteur.
+func SendHourReminderToTutee(tutee, tutor models.User, subject models.Subject, tutorSubjectID uint) error {
+	data := map[string]interface{}{
+		"tutee":   tutee,
+		"tutor":   tutor,
+		"subject": subject,
+		"link":    tutoringSpaceLink(tutorSubjectID),
+	}
+	return sendTemplatedMail("hourReminderTutee.html", tutee.Mail, "Tutorat INSA STPI - Pensez à déclarer vos heures", data)
 }

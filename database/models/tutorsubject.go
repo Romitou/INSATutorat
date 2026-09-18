@@ -19,6 +19,10 @@ type TutorSubject struct {
 
 	TotalHours float64 `sql:"type:decimal(3,2);" json:"totalHours"`
 
+	// dernier rappel envoyé au tuteur n'ayant déclaré aucune heure (cf. core/reminders.go) ;
+	// évite de renvoyer un rappel à chaque vérification périodique
+	HourReminderSentAt *time.Time `json:"-"`
+
 	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"-"`
 }

@@ -1,12 +1,15 @@
 package campaign
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/romitou/insatutorat/apierrors"
-	"github.com/romitou/insatutorat/database"
-	"github.com/romitou/insatutorat/database/models"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/romitou/insatutorat/apierrors"
+	"github.com/romitou/insatutorat/core"
+	"github.com/romitou/insatutorat/database"
+	"github.com/romitou/insatutorat/database/models"
+	"gorm.io/gorm"
 )
 
 type saveAssignmentsInput struct {
@@ -63,6 +66,12 @@ func PostAssignments() gin.HandlerFunc {
 			tr.CampaignID = uint(campaignId)
 			// si le tuteeRegistration existe déjà, on le met à jour
 			if tr.ID != 0 {
+				var existing models.TuteeRegistration
+				if err = db.Preload("Tutee").Where("id = ?", tr.ID).First(&existing).Error; err != nil {
+					apierrors.DatabaseError(c, err)
+					return
+				}
+
 				// on met à jour le tutor_subject_id uniquement (l'assignation)
 				err = db.Model(&models.TuteeRegistration{}).
 					Where("id = ?", tr.ID).
@@ -71,15 +80,55 @@ func PostAssignments() gin.HandlerFunc {
 					apierrors.DatabaseError(c, err)
 					return
 				}
+
+				// on ne notifie que si l'affectation vient d'être créée ou changée, pas à
+				// chaque enregistrement de la page (qui renvoie systématiquement toute la liste)
+				if newlyAssigned(existing.TutorSubjectID, tr.TutorSubjectID) {
+					notifyNewAssignment(c, db, existing.Tutee, *tr.TutorSubjectID)
+				}
 			} else {
 				// sinon, on insère
 				if err = db.Create(&tr).Error; err != nil {
 					apierrors.DatabaseError(c, err)
 					return
 				}
+
+				if tr.TutorSubjectID != nil {
+					var fullTutee models.User
+					if err = db.First(&fullTutee, tr.TuteeID).Error; err == nil {
+						notifyNewAssignment(c, db, fullTutee, *tr.TutorSubjectID)
+					}
+				}
 			}
 		}
 
 		c.Status(http.StatusOK)
+	}
+}
+
+// newlyAssigned détermine si une affectation vient d'être créée ou modifiée, càd si
+// le tutor_subject_id passe de nil à une valeur, ou change de valeur
+func newlyAssigned(previous, next *uint) bool {
+	if next == nil {
+		return false
+	}
+	return previous == nil || *previous != *next
+}
+
+// notifyNewAssignment envoie un email au tutoré et au tuteur concernés par une
+// nouvelle affectation. Un échec d'envoi est loggué mais ne fait pas échouer la
+// requête : l'affectation en base de données reste la source de vérité.
+func notifyNewAssignment(c *gin.Context, db *gorm.DB, tutee models.User, tutorSubjectID uint) {
+	var ts models.TutorSubject
+	if err := db.Preload("Tutor").Preload("Subject").First(&ts, tutorSubjectID).Error; err != nil {
+		apierrors.LogError(c, err)
+		return
+	}
+
+	if err := core.SendAssignmentNotificationToTutee(tutee, ts.Tutor, ts.Subject, ts.ID); err != nil {
+		apierrors.LogError(c, err)
+	}
+	if err := core.SendAssignmentNotificationToTutor(ts.Tutor, tutee, ts.Subject, ts.ID); err != nil {
+		apierrors.LogError(c, err)
 	}
 }

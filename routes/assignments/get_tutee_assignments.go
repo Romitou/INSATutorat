@@ -32,6 +32,7 @@ func TuteeAssignments() gin.HandlerFunc {
 		var openCampaigns []models.Campaign
 		if err := database.Get().
 			Where("school_year = ?", os.Getenv("SCHOOL_YEAR")).
+			Where("is_archived = ?", false).
 			Find(&openCampaigns).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusOK, []tuteeAssignmentElement{})

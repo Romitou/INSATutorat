@@ -7,6 +7,7 @@ export interface Campaign {
     registrationStatus: string;
     registrationStartDate: string;
     registrationEndDate: string;
+    isArchived: boolean;
 }
 
 export interface SemesterAvailability {
@@ -65,11 +66,14 @@ export interface User {
     firstName: string;
     lastName: string;
     mail: string;
-    schoolYear: string;
+    studyYear: number;
     groups: string[];
     isTutor: boolean;
     isTutee: boolean;
     isAdmin: boolean;
+    lastLoginAt?: string;
+    anonymizedAt?: string | null;
+    eligibleForAnonymization?: boolean;
 }
 
 export interface TuteeAssignment {

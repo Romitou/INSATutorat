@@ -15,6 +15,10 @@ type Campaign struct {
 	RegistrationStartDate time.Time `json:"registrationStartDate"`
 	RegistrationEndDate   time.Time `json:"registrationEndDate"`
 
+	// une campagne archivée n'est plus proposée aux tuteurs/tutorés (tableaux de bord),
+	// mais reste consultable et modifiable depuis l'admin : ce n'est pas une suppression
+	IsArchived bool `json:"isArchived"`
+
 	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"-"`
 }

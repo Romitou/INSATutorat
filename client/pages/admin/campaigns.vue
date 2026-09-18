@@ -34,6 +34,15 @@ const colDefs = ref([
     headerName: "Statut d'inscription",
   },
   {
+    field: "isArchived",
+    headerName: "Statut",
+    cellRenderer: (params) => {
+      return params.value
+          ? `<span class="text-zinc-400">Archivée</span>`
+          : `<span class="text-green-600">Active</span>`;
+    },
+  },
+  {
     field: "view",
     headerName: "Voir",
     cellRenderer: (params) => {
@@ -46,7 +55,23 @@ const colDefs = ref([
     cellRenderer: (params) => {
       return `<button class="text-blue-600 hover:text-blue-700" onclick="window.location.href='/admin/campaign/${params.data.id}/assignments'">Affectations</button>`;
     },
-  }
+  },
+  {
+    field: "archive",
+    headerName: "Archiver",
+    cellRenderer: (params) => {
+      return params.data.isArchived
+          ? `<button class="text-blue-600 hover:text-blue-700" data-unarchive-campaign="${params.data.id}">Désarchiver</button>`
+          : `<button class="text-orange-600 hover:text-orange-700" data-archive-campaign="${params.data.id}">Archiver</button>`;
+    },
+    onCellClicked: (params) => {
+      if (params.event?.target?.dataset?.archiveCampaign) {
+        handleToggleArchive(params.data, true);
+      } else if (params.event?.target?.dataset?.unarchiveCampaign) {
+        handleToggleArchive(params.data, false);
+      }
+    },
+  },
 ]);
 
 const campaigns = ref<Campaign[]>([]);
@@ -74,6 +99,17 @@ async function handleCreateCampaign(newCampaign: Campaign) {
     await fetchCampaigns();
   } else {
     console.error('Erreur lors de la création de la campagne');
+  }
+}
+
+async function handleToggleArchive(campaign: Campaign, archive: boolean) {
+  const res = await useApiFetch(`/admin/campaign/${campaign.id}/${archive ? 'archive' : 'unarchive'}`, {
+    method: 'POST',
+  });
+  if (res.ok) {
+    await fetchCampaigns();
+  } else {
+    console.error('Erreur lors de l\'archivage de la campagne:', await res.text());
   }
 }
 

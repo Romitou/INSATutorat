@@ -34,6 +34,8 @@ func main() {
 	core.SetupMailer()
 	// connexion à la base de données
 	database.Connect()
+	// rappels automatiques par email aux tuteurs n'ayant déclaré aucune heure
+	core.StartHourReminderScheduler()
 
 	// middlewares étant utilisés dans certaines routes
 	corsMiddleware := middlewares.CorsHandler()
@@ -100,12 +102,21 @@ func main() {
 	adminRouter := router.Group("/admin", userMiddleware, adminMiddleware)
 	{
 		adminRouter.GET("/subjects", admin.GetSubjects())
+		adminRouter.POST("/subjects", admin.PostSubject())
+		adminRouter.PATCH("/subjects/:id", admin.PatchSubject())
+		adminRouter.DELETE("/subjects/:id", admin.DeleteSubject())
+
 		adminRouter.GET("/users", admin.GetUsers())
+		adminRouter.PATCH("/users/:id", admin.PatchUser())
+		adminRouter.POST("/users/:id/anonymize", admin.AnonymizeUser())
+		adminRouter.POST("/users/anonymize-eligible", admin.AnonymizeEligibleUsers())
 
 		adminRouter.GET("/campaigns", admin.GetCampaigns())
 		adminRouter.POST("/campaigns", admin.PostCampaign())
 
 		adminRouter.PATCH("/campaign/:campaignId", adminCampaign.PatchCampaign())
+		adminRouter.POST("/campaign/:campaignId/archive", adminCampaign.ArchiveCampaign())
+		adminRouter.POST("/campaign/:campaignId/unarchive", adminCampaign.UnarchiveCampaign())
 		acRouter := adminRouter.Group("/campaign/:campaignId")
 		{
 			acRouter.GET("/overview", adminCampaign.GetCampaign())

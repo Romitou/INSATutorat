@@ -45,3 +45,15 @@ var EmailNotRegistered = PublicError{
 	ErrorCode: "EMAIL_NOT_REGISTERED",
 	Help:      "The email address provided is not registered.",
 }
+
+var ResourceInUse = PublicError{
+	HttpCode:  http.StatusConflict,
+	ErrorCode: "RESOURCE_IN_USE",
+	Help:      "This resource is referenced elsewhere and cannot be deleted.",
+}
+
+var AlreadyAnonymized = PublicError{
+	HttpCode:  http.StatusConflict,
+	ErrorCode: "ALREADY_ANONYMIZED",
+	Help:      "This user account has already been anonymized.",
+}

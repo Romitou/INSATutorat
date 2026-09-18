@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {AcademicCapIcon, BookOpenIcon, UsersIcon} from "@heroicons/vue/24/outline";
+import {AcademicCapIcon, BookOpenIcon, DocumentTextIcon, UsersIcon} from "@heroicons/vue/24/outline";
 
 definePageMeta({
   layout: 'loggedin'
@@ -47,6 +47,18 @@ definePageMeta({
             <div>
               <h2 class="text-xl font-semibold text-gray-900 group-hover:text-orange-700">Matières</h2>
               <p class="text-gray-500">Voir et gérer les matières</p>
+            </div>
+          </div>
+        </NuxtLink>
+
+        <NuxtLink class="block bg-white rounded-2xl shadow p-8 hover:shadow-lg transition group" to="/admin/documentation">
+          <div class="flex items-center space-x-4">
+            <div class="bg-purple-100 text-purple-600 rounded-full p-3">
+              <DocumentTextIcon class="h-8 w-8"/>
+            </div>
+            <div>
+              <h2 class="text-xl font-semibold text-gray-900 group-hover:text-purple-700">Documentation</h2>
+              <p class="text-gray-500">Guide d'administration de la plateforme</p>
             </div>
           </div>
         </NuxtLink>
