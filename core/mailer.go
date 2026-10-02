@@ -12,6 +12,10 @@ import (
 	"github.com/romitou/insatutorat/database/models"
 )
 
+// envoi des mails désactivé temporairement : sendTemplatedMail ne fait que logguer
+// et le planificateur de rappels d'heures n'est pas lancé. Repasser à true pour réactiver.
+const mailsEnabled = false
+
 var smtpDialer *gomail.Dialer
 
 func SetupMailer() {
@@ -38,6 +42,11 @@ func defaultData(user models.User) map[string]interface{} {
 // sendTemplatedMail factorise le chargement d'un template mails/build_production/*.html
 // (généré par `npm run build` dans mails/, cf. mails/emails/) et l'envoi via SMTP.
 func sendTemplatedMail(templateFile, to, subject string, data map[string]interface{}) error {
+	if !mailsEnabled {
+		log.Printf("envoi de mail désactivé, mail \"%s\" à %s ignoré\n", subject, to)
+		return nil
+	}
+
 	t, err := template.ParseFiles("mails/build_production/" + templateFile)
 	if err != nil {
 		return err

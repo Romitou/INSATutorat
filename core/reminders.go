@@ -15,6 +15,12 @@ const hourReminderCooldown = 14 * 24 * time.Hour
 // tuteurs actifs (campagne en cours, non archivée) n'ayant déclaré aucune heure, et
 // leur envoie un rappel par email. À appeler une seule fois au démarrage du serveur.
 func StartHourReminderScheduler() {
+	// sinon hour_reminder_sent_at serait mis à jour sans qu'aucun mail ne parte,
+	// ce qui retarderait les vrais rappels une fois l'envoi réactivé
+	if !mailsEnabled {
+		return
+	}
+
 	go func() {
 		// on laisse le temps au serveur de finir de démarrer avant la première vérification
 		time.Sleep(1 * time.Minute)
