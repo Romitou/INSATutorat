@@ -69,8 +69,11 @@ async function submitChoices() {
     if (response.ok) {
       useToast().success('Vos choix ont bien été enregistrés');
     } else {
-      console.error("Erreur lors de l\'enregistrement des choix :", await response.text());
-      useToast().error('Erreur lors de l\'enregistrement des choix');
+      const body = await response.text();
+      console.error("Erreur serveur :", body);
+      useToast().error(body.includes('REGISTRATION_CLOSED')
+          ? 'Les inscriptions à cette campagne sont fermées'
+          : 'Erreur lors de l\'enregistrement des choix');
     }
   } catch (err) {
     console.error("Erreur lors de l\'enregistrement des choix :", err);

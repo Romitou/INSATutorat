@@ -147,9 +147,12 @@ const submitSlots = async () => {
         }
       })
     } else {
-      console.error(await res.text())
+      const body = await res.text()
+      console.error(body)
       useToast().update(toastId, {
-        content: 'Erreur lors de l\'enregistrement des créneaux',
+        content: body.includes('REGISTRATION_CLOSED')
+            ? 'Les inscriptions à cette campagne sont fermées'
+            : 'Erreur lors de l\'enregistrement des créneaux',
         options: {
           type: "error",
           timeout: 5000,

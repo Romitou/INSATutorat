@@ -15,7 +15,6 @@ const emit = defineEmits<{
   (e: 'submit', campaign: Campaign): void
 }>()
 
-const schoolYear = ref('')
 const semester = ref(1)
 const startDate = ref('')
 const endDate = ref('')
@@ -28,7 +27,6 @@ watch(
     () => props.initialData,
     (data) => {
       if (data) {
-        schoolYear.value = data.schoolYear
         semester.value = data.semester
         startDate.value = DateTime.fromISO(data.startDate).toISODate()
         endDate.value = DateTime.fromISO(data.endDate).toISODate()
@@ -36,7 +34,6 @@ watch(
         registrationEndDate.value = DateTime.fromISO(data.registrationEndDate).toISODate()
         registrationStatus.value = data.registrationStatus
       } else {
-        schoolYear.value = ''
         semester.value = 1
         startDate.value = ''
         endDate.value = ''
@@ -50,11 +47,17 @@ watch(
     { immediate: true }
 )
 
+// année scolaire déduite de la date de début (du 1er septembre au 31 août), comme côté backend
+const schoolYear = computed(() => {
+  if (!startDate.value) return ''
+  const start = DateTime.fromISO(startDate.value)
+  if (!start.isValid) return ''
+  const year = start.month >= 9 ? start.year : start.year - 1
+  return `${year}-${year + 1}`
+})
+
 const isValid = computed(() => {
   errors.value = {}
-  if (!schoolYear.value.trim()) {
-    errors.value.schoolYear = 'L\'année scolaire est requise.'
-  }
   if (!startDate.value) errors.value.startDate = 'La date de début est requise.'
   if (!endDate.value) errors.value.endDate = 'La date de fin est requise.'
   if (!registrationStartDate.value) errors.value.registrationStartDate = 'La date de début des inscriptions est requise.'
@@ -68,7 +71,7 @@ function submit() {
 
   emit('submit', {
     id: props.initialData?.id,
-    schoolYear: schoolYear.value.trim(),
+    schoolYear: schoolYear.value,
     semester: semester.value,
     startDate: DateTime.fromISO(startDate.value).toISO(),
     endDate: DateTime.fromISO(endDate.value).toISO(),
@@ -92,12 +95,9 @@ function submit() {
 
         <div>
           <label class="block text-sm font-medium text-zinc-700">Année scolaire</label>
-          <input
-              type="text"
-              v-model="schoolYear"
-              class="mt-1 w-full border border-zinc-300 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <p v-if="errors.schoolYear" class="text-sm text-red-500 mt-1">{{ errors.schoolYear }}</p>
+          <p class="mt-1 w-full border border-zinc-200 bg-zinc-50 rounded-md p-2 text-sm text-zinc-600">
+            {{ schoolYear || 'Déduite de la date de début' }}
+          </p>
         </div>
 
 

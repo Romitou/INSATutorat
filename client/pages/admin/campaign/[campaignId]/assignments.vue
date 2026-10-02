@@ -30,21 +30,31 @@ const generationLogs = ref<string[]>([])
 
 const fetchUsers = async () => {
   const res = await useApiFetch(`/admin/campaign/${campaignId}/users`)
-  if (res.ok) users.value = await res.json()
+  if (!res.ok) {
+    useToast().error('Erreur lors du chargement des utilisateurs de la campagne')
+    return
+  }
+  users.value = await res.json()
 }
 
 const fetchSubjects = async () => {
   const res = await useApiFetch(`/campaign/${campaignId}/subjects`)
-  if (res.ok) subjects.value = await res.json()
+  if (!res.ok) {
+    useToast().error('Erreur lors du chargement des matières de la campagne')
+    return
+  }
+  subjects.value = await res.json()
 }
 
 const fetchAssignments = async () => {
   const res = await useApiFetch(`/admin/campaign/${campaignId}/assignments`)
-  if (res.ok) {
-    const result = await res.json() as AssignmentResponse
-    tuteeAssignments.value = result.tutees
-    tutorSubjects.value = result.tutorSubjects
+  if (!res.ok) {
+    useToast().error('Erreur lors du chargement des affectations')
+    return
   }
+  const result = await res.json() as AssignmentResponse
+  tuteeAssignments.value = result.tutees
+  tutorSubjects.value = result.tutorSubjects
 }
 
 const fetchGeneratedAssignments = async () => {

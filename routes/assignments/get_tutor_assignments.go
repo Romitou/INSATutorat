@@ -3,7 +3,6 @@ package assignments
 import (
 	"errors"
 	"net/http"
-	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/romitou/insatutorat/apierrors"
@@ -23,7 +22,6 @@ func TutorAssignments() gin.HandlerFunc {
 
 		var openCampaigns []models.Campaign
 		if err := database.Get().
-			Where("school_year = ?", os.Getenv("SCHOOL_YEAR")).
 			Where("is_archived = ?", false).
 			Find(&openCampaigns).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {

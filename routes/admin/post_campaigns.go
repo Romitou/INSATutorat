@@ -16,6 +16,13 @@ func PostCampaign() gin.HandlerFunc {
 			return
 		}
 
+		if input.StartDate.IsZero() {
+			_ = c.Error(apierrors.BadRequest)
+			return
+		}
+		// l'année scolaire est toujours déduite de la date de début, jamais saisie
+		input.ComputeSchoolYear()
+
 		if err := database.Get().
 			Create(&input).Error; err != nil {
 			apierrors.DatabaseError(c, err)

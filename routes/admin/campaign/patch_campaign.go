@@ -48,6 +48,12 @@ func PatchCampaign() gin.HandlerFunc {
 		input.CreatedAt = campaign.CreatedAt
 		input.UpdatedAt = campaign.UpdatedAt
 
+		// l'année scolaire est toujours déduite de la date de début, jamais saisie
+		if input.StartDate.IsZero() {
+			input.StartDate = campaign.StartDate
+		}
+		input.ComputeSchoolYear()
+
 		if err = database.Get().
 			Where("id = ?", campaignId).
 			Updates(&input).Error; err != nil {

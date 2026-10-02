@@ -32,7 +32,8 @@ function registrationState(campaign: Campaign): 'FUTURE' | 'OPEN' | 'CLOSED' {
   const end = campaign.registrationEndDate ? new Date(campaign.registrationEndDate) : null
 
   if (start && now < start) return 'FUTURE'
-  if (end && now > end) return 'CLOSED'
+  // la date de fin est incluse : les inscriptions restent ouvertes toute la journée (comme côté backend)
+  if (end && now.getTime() >= end.getTime() + 24 * 60 * 60 * 1000) return 'CLOSED'
   return 'OPEN'
 }
 

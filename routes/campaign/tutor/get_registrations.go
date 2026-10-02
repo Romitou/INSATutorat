@@ -3,7 +3,6 @@ package tutor
 import (
 	"errors"
 	"net/http"
-	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/romitou/insatutorat/apierrors"
@@ -30,7 +29,6 @@ func GetRegistrations() gin.HandlerFunc {
 		var campaign models.Campaign
 		if err := database.Get().
 			Where("id = ?", campaignId).
-			Where("school_year = ?", os.Getenv("SCHOOL_YEAR")).
 			First(&campaign).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				_ = c.Error(apierrors.NotFound)

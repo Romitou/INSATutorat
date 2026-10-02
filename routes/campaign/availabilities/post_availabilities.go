@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
@@ -30,13 +29,17 @@ func PostAvailabilities() gin.HandlerFunc {
 		var campaign models.Campaign
 		if err := database.Get().
 			Where("id = ?", campaignId).
-			Where("school_year = ?", os.Getenv("SCHOOL_YEAR")).
 			First(&campaign).Error; err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				_ = c.Error(apierrors.NotFound)
 				return
 			}
 			apierrors.DatabaseError(c, err)
+			return
+		}
+
+		if !campaign.IsRegistrationOpen(time.Now()) {
+			_ = c.Error(apierrors.RegistrationClosed)
 			return
 		}
 
@@ -61,7 +64,7 @@ func PostAvailabilities() gin.HandlerFunc {
 		}
 
 		// on récupère l'agenda de l'utilisateur pour le semestre
-		campaignOverview, err := core.GetCampaignOverview(os.Getenv("SCHOOL_YEAR")+"-STPI"+strconv.Itoa(user.StpiYear), campaign, user.Groups)
+		campaignOverview, err := core.GetCampaignOverview(strconv.Itoa(campaign.SchoolYearStart())+"-STPI"+strconv.Itoa(user.StpiYear), campaign, user.Groups)
 		if err != nil {
 			_ = c.Error(err)
 			return

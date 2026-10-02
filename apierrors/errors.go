@@ -57,3 +57,9 @@ var AlreadyAnonymized = PublicError{
 	ErrorCode: "ALREADY_ANONYMIZED",
 	Help:      "This user account has already been anonymized.",
 }
+
+var RegistrationClosed = PublicError{
+	HttpCode:  http.StatusForbidden,
+	ErrorCode: "REGISTRATION_CLOSED",
+	Help:      "Registrations for this campaign are closed.",
+}
